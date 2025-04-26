@@ -22,7 +22,7 @@
     </header>
 
     <!-- Tarjeta de Pokémon -->
-    <main v-if="Object.entries(pokemonData).length > 0" class="max-w-md mx-auto">
+    <main v-if="hasPokemonData" class="max-w-md mx-auto">
       <section class="pokemonCard bg-white rounded-xl shadow-md overflow-hidden">
         <!-- Nombre e Imagen -->
         <div class="nameImg bg-gradient-to-r from-blue-400 to-blue-600 p-6 text-center">
@@ -42,26 +42,7 @@
               v-for="(type, index) in pokemonData.types" 
               :key="index"
               class="px-4 py-1 rounded-full text-white capitalize"
-              :class="{
-                'bg-red-500': type.type.name === 'fire',
-                'bg-blue-500': type.type.name === 'water',
-                'bg-green-500': type.type.name === 'grass',
-                'bg-yellow-400': type.type.name === 'electric',
-                'bg-purple-500': type.type.name === 'poison',
-                'bg-gray-400': type.type.name === 'normal',
-                'bg-pink-300': type.type.name === 'fairy',
-                'bg-red-700': type.type.name === 'fighting',
-                'bg-gray-600': type.type.name === 'rock',
-                'bg-indigo-300': type.type.name === 'flying',
-                'bg-lime-500': type.type.name === 'bug',
-                'bg-yellow-600': type.type.name === 'ground',
-                'bg-pink-500': type.type.name === 'psychic',
-                'bg-purple-700': type.type.name === 'ghost',
-                'bg-indigo-600': type.type.name === 'dragon',
-                'bg-gray-800': type.type.name === 'dark',
-                'bg-gray-500': type.type.name === 'steel',
-                'bg-blue-200': type.type.name === 'ice'
-              }"
+              :class="getTypeClass(type.type.name)"
             >
               {{ type.type.name }}
             </li>
@@ -86,32 +67,49 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue'
 import { pokeapi } from './api/pokeapi'
 
-export default {
-  name: "App", 
+const pokemonId = ref('')
+const pokemonData = ref({})
 
-  data(){
-    return{
-      pokemonData: {},
-      pokemonId: "",
-    }
-  },
+const hasPokemonData = computed(() => Object.entries(pokemonData.value).length > 0)
 
-  methods:{
-    async searchPokemon(){
-      try {
-        const pokemonToFind = await fetch(`${pokeapi}/${this.pokemonId}`)
-        const pokemon = await pokemonToFind.json()
-        this.pokemonData = pokemon 
-        console.log(this.pokemonData)
-        return pokemon
-      } catch (error) {
-        alert("No se encontró el pokemon")
-        console.log(error)
-      } 
-    } 
+const getTypeClass = (typeName) => {
+  const typeClasses = {
+    fire: 'bg-red-500',
+    water: 'bg-blue-500',
+    grass: 'bg-green-500',
+    electric: 'bg-yellow-400',
+    poison: 'bg-purple-500',
+    normal: 'bg-gray-400',
+    fairy: 'bg-pink-300',
+    fighting: 'bg-red-700',
+    rock: 'bg-gray-600',
+    flying: 'bg-indigo-300',
+    bug: 'bg-lime-500',
+    ground: 'bg-yellow-600',
+    psychic: 'bg-pink-500',
+    ghost: 'bg-purple-700',
+    dragon: 'bg-indigo-600',
+    dark: 'bg-gray-800',
+    steel: 'bg-gray-500',
+    ice: 'bg-blue-200'
+  }
+  return typeClasses[typeName] || 'bg-gray-400'
+}
+
+const searchPokemon = async () => {
+  try {
+    const response = await fetch(`${pokeapi}/${pokemonId.value}`)
+    if (!response.ok) throw new Error('Pokémon not found')
+    pokemonData.value = await response.json()
+    console.log(pokemonData.value)
+  } catch (error) {
+    alert("No se encontró el pokemon")
+    console.error(error)
+    pokemonData.value = {}
   }
 }
 </script>
