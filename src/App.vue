@@ -77,50 +77,69 @@
         </div>
       </section>
     </main>
-
-    <section class="max-w-5xl mx-auto mt-8">
-      <h1 class="text-2xl font-bold mb-6 text-gray-800">Pokémon by Type</h1>
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <!-- Fire Type Pokemon -->
-        <div class="bg-white rounded-xl shadow-md p-7">
-          <h2 class="text-xl font-semibold mb-4 text-red-500">Fire Type</h2>
-          <div class="space-y-5" v-if="typePokemons.fire.length">
-            <div v-for="pokemon in typePokemons.fire" :key="pokemon.name" 
-                 class="flex items-center space-x-4 p-2 bg-gray-50 rounded">
-              <img :src="pokemon.image" :alt="pokemon.name" class="w-17 h-16">
-              <span class="capitalize">{{ pokemon.name }}</span>
-            </div>
-          </div>
-          <div v-else class="text-gray-501">Loading...</div>
-        </div>
-
-        <!-- Water Type Pokemon -->
-        <div class="bg-white rounded-xl shadow-md p-7">
-          <h2 class="text-xl font-semibold mb-4 text-blue-500">Water Type</h2>
-          <div class="space-y-5" v-if="typePokemons.water.length">
-            <div v-for="pokemon in typePokemons.water" :key="pokemon.name" 
-                 class="flex items-center space-x-4 p-2 bg-gray-50 rounded">
-              <img :src="pokemon.image" :alt="pokemon.name" class="w-17 h-16">
-              <span class="capitalize">{{ pokemon.name }}</span>
-            </div>
-          </div>
-          <div v-else class="text-gray-501">Loading...</div>
-        </div>
-
-        <!-- Electric Type Pokemon -->
-        <div class="bg-white rounded-xl shadow-md p-7">
-          <h2 class="text-xl font-semibold mb-4 text-yellow-500">Electric Type</h2>
-          <div class="space-y-5" v-if="typePokemons.electric.length">
-            <div v-for="pokemon in typePokemons.electric" :key="pokemon.name" 
-                 class="flex items-center space-x-4 p-2 bg-gray-50 rounded">
-              <img :src="pokemon.image" :alt="pokemon.name" class="w-17 h-16">
-              <span class="capitalize">{{ pokemon.name }}</span>
-            </div>
-          </div>
-          <div v-else class="text-gray-501">Loading...</div>
-        </div>
-      </div>
+    <div class="min-h-screen bg-gray-100 p-4">
+    <section class="header max-w-md mx-auto bg-white p-6 rounded-lg shadow mb-8">
+      <label class="block text-gray-700 mb-2">
+        Select Pokémon Type:
+        <select 
+          v-model="selectedType" 
+          class="block w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mt-2"
+        >
+          <option value="fire">Fire Type</option>
+          <option value="water">Water Type</option>
+          <option value="electric">Electric Type</option>
+        </select>
+      </label>
+      <button 
+        @click="fetchSelectedTypePokemon"
+        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+      >
+        Show Pokémon
+      </button>
     </section>
+
+    <!-- Mostrar Pokémon seleccionado -->
+    <div class="grid grid-cols-1 gap-6">
+      <!-- Fire Type Pokemon -->
+      <div v-if="selectedType === 'fire'" class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-xl font-semibold mb-4 text-red-500">Fire Type</h3>
+        <div class="space-y-4" v-if="capitalizedTypePokemons.fire.length">
+          <div v-for="pokemon in capitalizedTypePokemons.fire" :key="pokemon.name" 
+               class="flex items-center space-x-3 p-2 bg-gray-50 rounded">
+            <img :src="pokemon.image" :alt="pokemon.name" class="w-16 h-16">
+            <span class="capitalize">{{ pokemon.name }}</span>
+          </div>
+        </div>
+        <div v-else class="text-gray-500">Loading...</div>
+      </div>
+      
+      <!-- Water Type Pokemon -->
+      <div v-if="selectedType === 'water'" class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-xl font-semibold mb-4 text-blue-500">Water Type</h3>
+        <div class="space-y-4" v-if="capitalizedTypePokemons.water.length">
+          <div v-for="pokemon in capitalizedTypePokemons.water" :key="pokemon.name" 
+               class="flex items-center space-x-3 p-2 bg-gray-50 rounded">
+            <img :src="pokemon.image" :alt="pokemon.name" class="w-16 h-16">
+            <span class="capitalize">{{ pokemon.name }}</span>
+          </div>
+        </div>
+        <div v-else class="text-gray-500">Loading...</div>
+      </div>
+      
+      <!-- Electric Type Pokemon -->
+      <div v-if="selectedType === 'electric'" class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-xl font-semibold mb-4 text-yellow-500">Electric Type</h3>
+        <div class="space-y-4" v-if="capitalizedTypePokemons.electric.length">
+          <div v-for="pokemon in capitalizedTypePokemons.electric" :key="pokemon.name" 
+               class="flex items-center space-x-3 p-2 bg-gray-50 rounded">
+            <img :src="pokemon.image" :alt="pokemon.name" class="w-16 h-16">
+            <span class="capitalize">{{ pokemon.name }}</span>
+          </div>
+        </div>
+        <div v-else class="text-gray-500">Loading...</div>
+      </div>
+    </div>
+  </div>      
   </div>
 </template>
 
@@ -159,6 +178,7 @@ const getTypeClass = (typeName) => {
   return typeClasses[typeName] || 'bg-gray-400'
 }
 
+
 const searchPokemon = async () => {
   try {
     errorMessage.value = '' 
@@ -191,37 +211,50 @@ const randomPokemonId = async () => {
   }
 }
 
+const selectedType = ref('fire') // Tipo seleccionado por defecto
 const typePokemons = ref({
   fire: [],
   water: [],
   electric: []
 })
 
-const fetchPokemonByType = async (type) => {
+// Computed para capitalizar el nombre del Pokémon
+const capitalizedTypePokemons = computed(() => {
+  return {
+    fire: typePokemons.value.fire.map(pokemon => ({
+      ...pokemon,
+      name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)
+    })),
+    water: typePokemons.value.water.map(pokemon => ({
+      ...pokemon,
+      name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)
+    })),
+    electric: typePokemons.value.electric.map(pokemon => ({
+      ...pokemon,
+      name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)
+    }))
+  }
+})
+
+const fetchSelectedTypePokemon = async () => {
   try {
-    const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
-    const pokemonList = response.data.pokemon.slice(0, 5);
-    
+    if (!selectedType.value) return
+    const response = await axios.get(`https://pokeapi.co/api/v2/type/${selectedType.value}`)
+    const pokemonList = response.data.pokemon.slice(0, 5) // Obtener los primeros 5 Pokémon
+
     const detailedPokemon = await Promise.all(
       pokemonList.map(async (p) => {
-        const pokemonData = await axios.get(p.pokemon.url);
+        const pokemonData = await axios.get(p.pokemon.url)
         return {
           name: pokemonData.data.name,
           image: pokemonData.data.sprites.front_default
-        };
+        }
       })
-    );
-    
-    typePokemons.value[type] = detailedPokemon;
+    )
+
+    typePokemons.value[selectedType.value] = detailedPokemon
   } catch (error) {
-    console.error(`Error fetching ${type} type pokemon:`, error);
-    typePokemons.value[type] = [];
+    console.error(`Error fetching ${selectedType.value} type Pokémon:`, error)
   }
 }
-
-onMounted(() => {
-  fetchPokemonByType('fire');
-  fetchPokemonByType('water');
-  fetchPokemonByType('electric');
-})
 </script>
