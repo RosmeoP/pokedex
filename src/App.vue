@@ -77,11 +77,55 @@
         </div>
       </section>
     </main>
+
+    <section class="max-w-5xl mx-auto mt-8">
+      <h1 class="text-2xl font-bold mb-6 text-gray-800">Pokémon by Type</h1>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <!-- Fire Type Pokemon -->
+        <div class="bg-white rounded-xl shadow-md p-7">
+          <h2 class="text-xl font-semibold mb-4 text-red-500">Fire Type</h2>
+          <div class="space-y-5" v-if="typePokemons.fire.length">
+            <div v-for="pokemon in typePokemons.fire" :key="pokemon.name" 
+                 class="flex items-center space-x-4 p-2 bg-gray-50 rounded">
+              <img :src="pokemon.image" :alt="pokemon.name" class="w-17 h-16">
+              <span class="capitalize">{{ pokemon.name }}</span>
+            </div>
+          </div>
+          <div v-else class="text-gray-501">Loading...</div>
+        </div>
+
+        <!-- Water Type Pokemon -->
+        <div class="bg-white rounded-xl shadow-md p-7">
+          <h2 class="text-xl font-semibold mb-4 text-blue-500">Water Type</h2>
+          <div class="space-y-5" v-if="typePokemons.water.length">
+            <div v-for="pokemon in typePokemons.water" :key="pokemon.name" 
+                 class="flex items-center space-x-4 p-2 bg-gray-50 rounded">
+              <img :src="pokemon.image" :alt="pokemon.name" class="w-17 h-16">
+              <span class="capitalize">{{ pokemon.name }}</span>
+            </div>
+          </div>
+          <div v-else class="text-gray-501">Loading...</div>
+        </div>
+
+        <!-- Electric Type Pokemon -->
+        <div class="bg-white rounded-xl shadow-md p-7">
+          <h2 class="text-xl font-semibold mb-4 text-yellow-500">Electric Type</h2>
+          <div class="space-y-5" v-if="typePokemons.electric.length">
+            <div v-for="pokemon in typePokemons.electric" :key="pokemon.name" 
+                 class="flex items-center space-x-4 p-2 bg-gray-50 rounded">
+              <img :src="pokemon.image" :alt="pokemon.name" class="w-17 h-16">
+              <span class="capitalize">{{ pokemon.name }}</span>
+            </div>
+          </div>
+          <div v-else class="text-gray-501">Loading...</div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { pokeapi } from './api/pokeapi'
 import axios from 'axios';
 
@@ -146,4 +190,38 @@ const randomPokemonId = async () => {
     pokemonData.value = {};
   }
 }
+
+const typePokemons = ref({
+  fire: [],
+  water: [],
+  electric: []
+})
+
+const fetchPokemonByType = async (type) => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
+    const pokemonList = response.data.pokemon.slice(0, 5);
+    
+    const detailedPokemon = await Promise.all(
+      pokemonList.map(async (p) => {
+        const pokemonData = await axios.get(p.pokemon.url);
+        return {
+          name: pokemonData.data.name,
+          image: pokemonData.data.sprites.front_default
+        };
+      })
+    );
+    
+    typePokemons.value[type] = detailedPokemon;
+  } catch (error) {
+    console.error(`Error fetching ${type} type pokemon:`, error);
+    typePokemons.value[type] = [];
+  }
+}
+
+onMounted(() => {
+  fetchPokemonByType('fire');
+  fetchPokemonByType('water');
+  fetchPokemonByType('electric');
+})
 </script>
