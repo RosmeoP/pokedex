@@ -70,6 +70,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { pokeapi } from './api/pokeapi'
+import axios from 'axios';
 
 const pokemonId = ref('')
 const pokemonData = ref({})
@@ -100,16 +101,18 @@ const getTypeClass = (typeName) => {
   return typeClasses[typeName] || 'bg-gray-400'
 }
 
+
+
 const searchPokemon = async () => {
   try {
-    const response = await fetch(`${pokeapi}/${pokemonId.value}`)
-    if (!response.ok) throw new Error('Pokémon not found')
-    pokemonData.value = await response.json()
-    console.log(pokemonData.value)
+    const response = await axios.get(`${pokeapi}/${pokemonId.value.toLowerCase()}`);
+    pokemonData.value = response.data; // Axios pone la respuesta en .data
+    console.log(pokemonData.value);
   } catch (error) {
-    alert("No se encontró el pokemon")
-    console.error(error)
-    pokemonData.value = {}
+    alert("No se encontró el pokemon");
+    console.error("Error:", error.response?.data || error.message);
+    pokemonData.value = {};
   }
-}
+};
+
 </script>
