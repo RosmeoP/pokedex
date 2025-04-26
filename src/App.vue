@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 p-4">
     <header class="header max-w-md mx-auto bg-white p-6 rounded-lg shadow mb-8">
       <label class="block text-gray-700 mb-2">
-        Type your pokemon name:
+        Type your pokemon name or id:
         <div class="flex mt-2">
           <input 
             v-model="pokemonId"
@@ -21,10 +21,24 @@
       </label>
     </header>
 
-    <!-- Tarjeta de Pokémon -->
+    <section class="header max-w-md mx-auto bg-white p-6 rounded-lg shadow mb-8">
+      <label class="block text-gray-700 mb-2">
+        Pokemon only gets generated between 1 and 151:
+        <div class="flex mt-2">
+          <button 
+            @click="randomPokemonId"
+            class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 transition-colors"
+          >
+            Buscar
+          </button>
+        </div>
+        <!-- Mostrar mensaje de error si existe -->
+        <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
+      </label>
+    </section>
+
     <main v-if="hasPokemonData" class="max-w-md mx-auto">
       <section class="pokemonCard bg-white rounded-xl shadow-md overflow-hidden">
-        <!-- Nombre e Imagen -->
         <div class="nameImg bg-gradient-to-r from-blue-400 to-blue-600 p-6 text-center">
           <h2 class="pokemonName text-2xl font-bold text-white capitalize">{{ pokemonData.name }}</h2>
           <img 
@@ -34,7 +48,6 @@
           />
         </div>
 
-        <!-- Tipos -->
         <div class="types p-6 border-b">
           <h2 class="text-xl font-semibold mb-3 text-gray-700">Type:</h2>
           <ul class="flex flex-wrap gap-2">
@@ -74,6 +87,7 @@ import axios from 'axios';
 
 const pokemonId = ref('')
 const pokemonData = ref({})
+const errorMessage = ref('')
 
 const hasPokemonData = computed(() => Object.entries(pokemonData.value).length > 0)
 
@@ -101,18 +115,35 @@ const getTypeClass = (typeName) => {
   return typeClasses[typeName] || 'bg-gray-400'
 }
 
-
-
 const searchPokemon = async () => {
   try {
+    errorMessage.value = '' 
     const response = await axios.get(`${pokeapi}/${pokemonId.value.toLowerCase()}`);
-    pokemonData.value = response.data; // Axios pone la respuesta en .data
+    pokemonData.value = response.data; 
     console.log(pokemonData.value);
   } catch (error) {
     alert("No se encontró el pokemon");
     console.error("Error:", error.response?.data || error.message);
     pokemonData.value = {};
   }
-};
+}
 
+const randomPokemonId = async () => {
+  try {
+    errorMessage.value = '' 
+    const randomId = Math.floor(Math.random() * 200) + 1; 
+    if (randomId > 151) {
+      errorMessage.value = 'El Pokémon generado tiene un ID mayor a 151. Intenta nuevamente.' 
+      pokemonData.value = {} 
+      return
+    }
+    const response = await axios.get(`${pokeapi}/${randomId}`); 
+    pokemonData.value = response.data; 
+    console.log(pokemonData.value);
+  } catch (error) {
+    alert("No se encontró el pokemon");
+    console.error("Error:", error.response?.data || error.message);
+    pokemonData.value = {};
+  }
+}
 </script>
