@@ -1,0 +1,6 @@
+https://github.com/RosmeoP/pokedex.git
+
+
+nombres:
+Anderson Amilcar Fuentes Portillo u20230098
+Rosmeo Mauricio Villalobos Parada u20230588
